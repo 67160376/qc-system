@@ -1,4 +1,10 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+const configuredApiUrl = import.meta.env.VITE_API_URL;
+
+// Use the deployed API in production. This prevents the production website
+// from trying to call localhost on the visitor's own computer.
+const API_URL = configuredApiUrl && !/localhost|127\.0\.0\.1/i.test(configuredApiUrl)
+  ? configuredApiUrl.replace(/\/$/, '')
+  : 'https://qc-system-api.onrender.com/api/v1';
 
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('qc_token');
