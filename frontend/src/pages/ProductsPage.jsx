@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Loading from '../components/Loading';
 import Modal from '../components/Modal';
@@ -20,12 +20,14 @@ export default function ProductsPage() {
   const [form, setForm] = useState(blankProduct);
   const [error, setError] = useState('');
   const [selectedId, setSelectedId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { hasRole } = useAuth();
   const canWrite = hasRole(['ADMIN', 'QC']);
 
   const loadProducts = async () => {
     setLoading(true);
+    setError('');
 
     try {
       const data = await api.get('/products');
@@ -40,6 +42,20 @@ export default function ProductsPage() {
   useEffect(() => {
     loadProducts();
   }, []);
+
+  const filteredProducts = useMemo(() => {
+    const keyword = searchTerm.trim().toLowerCase();
+
+    if (!keyword) return products;
+
+    return products.filter((product) => {
+      return (
+        product.product_code?.toLowerCase().includes(keyword) ||
+        product.product_name?.toLowerCase().includes(keyword) ||
+        product.description?.toLowerCase().includes(keyword)
+      );
+    });
+  }, [products, searchTerm]);
 
   const openCreate = () => {
     if (!canWrite) return;
@@ -80,7 +96,7 @@ export default function ProductsPage() {
       setModalOpen(false);
       setForm(blankProduct);
 
-      loadProducts();
+      await loadProducts();
     } catch (err) {
       setError(err.message || 'ไม่สามารถบันทึกข้อมูลได้');
     }
@@ -89,11 +105,15 @@ export default function ProductsPage() {
   const handleDelete = async () => {
     if (!canWrite || !selectedId) return;
 
+    setError('');
+
     try {
       await api.del(`/products/${selectedId}`);
 
       setConfirmOpen(false);
-      loadProducts();
+      setSelectedId(null);
+
+      await loadProducts();
     } catch (err) {
       setError(err.message || 'ไม่สามารถลบสินค้าได้');
     }
@@ -104,99 +124,278 @@ export default function ProductsPage() {
   }
 
   return (
-    <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 18,
-        }}
-      >
-        <h2 style={{ margin: 0 }}>จัดการสินค้า</h2>
+    <div style={styles.page}>
+      {/* ส่วนหัว */}
+      <div style={styles.hero}>
+        <div style={styles.heroContent}>
+          <div>
+            <div style={styles.eyebrow}>
+              PRODUCT MANAGEMENT
+            </div>
 
-        {canWrite && (
+            <h2 style={styles.heroTitle}>
+              จัดการข้อมูลสินค้า
+            </h2>
+
+            <p style={styles.heroText}>
+              จัดการ เพิ่ม แก้ไข และติดตามข้อมูลสินค้าภายในระบบควบคุมคุณภาพ
+            </p>
+          </div>
+
+          <div style={styles.heroIcon}>
+            📦
+          </div>
+        </div>
+      </div>
+
+      {/* สรุปข้อมูล */}
+      <div style={styles.summaryGrid}>
+        <div style={styles.summaryCard}>
+          <div style={styles.summaryIcon}>
+            📦
+          </div>
+
+          <div>
+            <div style={styles.summaryLabel}>
+              จำนวนสินค้าทั้งหมด
+            </div>
+
+            <div style={styles.summaryValue}>
+              {products.length}
+            </div>
+          </div>
+        </div>
+
+        <div style={styles.summaryCard}>
+          <div style={styles.summaryIcon}>
+            🔎
+          </div>
+
+          <div>
+            <div style={styles.summaryLabel}>
+              รายการที่แสดง
+            </div>
+
+            <div style={styles.summaryValue}>
+              {filteredProducts.length}
+            </div>
+          </div>
+        </div>
+
+        <div style={styles.summaryCard}>
+          <div style={styles.summaryIcon}>
+            🏭
+          </div>
+
+          <div>
+            <div style={styles.summaryLabel}>
+              สถานะระบบสินค้า
+            </div>
+
+            <div style={styles.summaryStatus}>
+              พร้อมใช้งาน
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* แถบค้นหา */}
+      <div style={styles.toolbar}>
+        <div style={styles.searchBox}>
+          <span style={{ fontSize: 18 }}>
+            🔍
+          </span>
+
+          <input
+            value={searchTerm}
+            onChange={(event) =>
+              setSearchTerm(event.target.value)
+            }
+            placeholder="ค้นหาจากรหัสสินค้า ชื่อสินค้า หรือรายละเอียด..."
+            style={styles.searchInput}
+          />
+        </div>
+
+        <div style={styles.toolbarRight}>
           <button
-            onClick={openCreate}
-            style={styles.primaryButton}
+            onClick={loadProducts}
+            style={styles.refreshButton}
           >
-            + เพิ่มสินค้า
+            ↻ รีเฟรช
           </button>
-        )}
+
+          {canWrite && (
+            <button
+              onClick={openCreate}
+              style={styles.primaryButton}
+            >
+              + เพิ่มสินค้า
+            </button>
+          )}
+        </div>
       </div>
 
       {error ? (
-        <div style={styles.error}>{error}</div>
+        <div style={styles.error}>
+          {error}
+        </div>
       ) : null}
 
+      {/* ตารางสินค้า */}
       <div style={styles.panel}>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th>รหัสสินค้า</th>
-              <th>ชื่อสินค้า</th>
-              <th>รายละเอียด</th>
-              <th>วันที่สร้าง</th>
+        <div style={styles.panelHeader}>
+          <div>
+            <h3 style={{ margin: 0 }}>
+              รายการสินค้า
+            </h3>
 
-              {canWrite && (
-                <th>จัดการ</th>
-              )}
-            </tr>
-          </thead>
+            <div style={styles.panelSubtitle}>
+              แสดงสินค้า {filteredProducts.length} รายการ
+            </div>
+          </div>
 
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td>{product.product_code}</td>
+          <span style={styles.countBadge}>
+            {filteredProducts.length} รายการ
+          </span>
+        </div>
 
-                <td>{product.product_name}</td>
+        {filteredProducts.length === 0 ? (
+          <div style={styles.emptyState}>
+            <div style={{ fontSize: 48 }}>
+              📦
+            </div>
 
-                <td>{product.description}</td>
+            <strong>
+              ไม่พบข้อมูลสินค้า
+            </strong>
 
-                <td>
-                  {new Date(
-                    product.created_at
-                  ).toLocaleDateString('th-TH')}
-                </td>
+            <span>
+              ลองค้นหาด้วยคำอื่น หรือเพิ่มสินค้าใหม่เข้าสู่ระบบ
+            </span>
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>
+                    สินค้า
+                  </th>
 
-                {canWrite && (
-                  <td>
-                    <button
-                      style={styles.actionButton}
-                      onClick={() => openEdit(product)}
-                    >
-                      แก้ไข
-                    </button>
+                  <th style={styles.th}>
+                    รหัสสินค้า
+                  </th>
 
-                    <button
+                  <th style={styles.th}>
+                    รายละเอียด
+                  </th>
+
+                  <th style={styles.th}>
+                    วันที่สร้าง
+                  </th>
+
+                  {canWrite && (
+                    <th
                       style={{
-                        ...styles.actionButton,
-                        ...styles.deleteButton,
-                      }}
-                      onClick={() => {
-                        setSelectedId(product.id);
-                        setConfirmOpen(true);
+                        ...styles.th,
+                        textAlign: 'center',
                       }}
                     >
-                      ลบ
-                    </button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      จัดการ
+                    </th>
+                  )}
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredProducts.map((product) => (
+                  <tr
+                    key={product.id}
+                    style={styles.tr}
+                  >
+                    <td style={styles.td}>
+                      <div style={styles.productInfo}>
+                        <div style={styles.productAvatar}>
+                          📦
+                        </div>
+
+                        <div>
+                          <div style={styles.productName}>
+                            {product.product_name}
+                          </div>
+
+                          <div style={styles.productId}>
+                            ID #{product.id}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td style={styles.td}>
+                      <span style={styles.codeBadge}>
+                        {product.product_code}
+                      </span>
+                    </td>
+
+                    <td style={styles.td}>
+                      <div style={styles.description}>
+                        {product.description || 'ไม่มีรายละเอียด'}
+                      </div>
+                    </td>
+
+                    <td style={styles.td}>
+                      <div>
+                        {new Date(
+                          product.created_at
+                        ).toLocaleDateString('th-TH')}
+                      </div>
+                    </td>
+
+                    {canWrite && (
+                      <td
+                        style={{
+                          ...styles.td,
+                          textAlign: 'center',
+                        }}
+                      >
+                        <button
+                          style={styles.editButton}
+                          onClick={() => openEdit(product)}
+                        >
+                          ✏️ แก้ไข
+                        </button>
+
+                        <button
+                          style={styles.deleteButton}
+                          onClick={() => {
+                            setSelectedId(product.id);
+                            setConfirmOpen(true);
+                          }}
+                        >
+                          🗑️ ลบ
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
+      {/* Modal เพิ่ม / แก้ไขสินค้า */}
       {canWrite && (
         <Modal
           open={modalOpen}
-          title={editing ? 'แก้ไขสินค้า' : 'เพิ่มสินค้า'}
+          title={editing ? '✏️ แก้ไขสินค้า' : '📦 เพิ่มสินค้าใหม่'}
           onClose={() => setModalOpen(false)}
         >
           <form onSubmit={handleSubmit}>
             <div style={styles.fieldRow}>
-              <label>รหัสสินค้า</label>
+              <label style={styles.label}>
+                รหัสสินค้า
+              </label>
 
               <input
                 value={form.product_code}
@@ -208,11 +407,14 @@ export default function ProductsPage() {
                 }
                 style={styles.input}
                 placeholder="เช่น PRD-001"
+                required
               />
             </div>
 
             <div style={styles.fieldRow}>
-              <label>ชื่อสินค้า</label>
+              <label style={styles.label}>
+                ชื่อสินค้า
+              </label>
 
               <input
                 value={form.product_name}
@@ -224,11 +426,14 @@ export default function ProductsPage() {
                 }
                 style={styles.input}
                 placeholder="กรอกชื่อสินค้า"
+                required
               />
             </div>
 
             <div style={styles.fieldRow}>
-              <label>รายละเอียด</label>
+              <label style={styles.label}>
+                รายละเอียดสินค้า
+              </label>
 
               <textarea
                 value={form.description}
@@ -240,20 +445,14 @@ export default function ProductsPage() {
                 }
                 style={{
                   ...styles.input,
-                  minHeight: '90px',
+                  minHeight: '100px',
+                  resize: 'vertical',
                 }}
                 placeholder="กรอกรายละเอียดสินค้า"
               />
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                gap: '10px',
-                marginTop: '16px',
-              }}
-            >
+            <div style={styles.formActions}>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
@@ -266,20 +465,26 @@ export default function ProductsPage() {
                 type="submit"
                 style={styles.primaryButton}
               >
-                {editing ? 'บันทึกการแก้ไข' : 'เพิ่มสินค้า'}
+                {editing
+                  ? 'บันทึกการแก้ไข'
+                  : 'เพิ่มสินค้า'}
               </button>
             </div>
           </form>
         </Modal>
       )}
 
+      {/* ยืนยันการลบ */}
       {canWrite && (
         <ConfirmDialog
           open={confirmOpen}
-          title="ลบสินค้า"
-          message="คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?"
+          title="🗑️ ลบสินค้า"
+          message="คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้? การดำเนินการนี้อาจไม่สามารถย้อนกลับได้"
           onConfirm={handleDelete}
-          onCancel={() => setConfirmOpen(false)}
+          onCancel={() => {
+            setConfirmOpen(false);
+            setSelectedId(null);
+          }}
         />
       )}
     </div>
@@ -287,71 +492,352 @@ export default function ProductsPage() {
 }
 
 const styles = {
+  page: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 20,
+  },
+
+  hero: {
+    background:
+      'linear-gradient(135deg, #0F172A 0%, #1E3A8A 55%, #2563EB 100%)',
+    borderRadius: '18px',
+    padding: '28px 30px',
+    color: '#fff',
+    boxShadow: '0 12px 30px rgba(37, 99, 235, 0.15)',
+  },
+
+  heroContent: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 20,
+  },
+
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: '0.12em',
+    color: '#BFDBFE',
+    marginBottom: 8,
+  },
+
+  heroTitle: {
+    margin: 0,
+    fontSize: 30,
+    letterSpacing: '-0.03em',
+  },
+
+  heroText: {
+    margin: '10px 0 0',
+    color: '#DBEAFE',
+    maxWidth: 620,
+    lineHeight: 1.6,
+  },
+
+  heroIcon: {
+    width: 90,
+    height: 90,
+    borderRadius: '22px',
+    background: 'rgba(255,255,255,0.12)',
+    border: '1px solid rgba(255,255,255,0.15)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 44,
+    flexShrink: 0,
+  },
+
+  summaryGrid: {
+    display: 'grid',
+    gridTemplateColumns:
+      'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: 18,
+  },
+
+  summaryCard: {
+    background: '#fff',
+    borderRadius: '14px',
+    padding: '18px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 14,
+    boxShadow:
+      '0 8px 24px rgba(15, 23, 42, 0.04)',
+    border: '1px solid #F1F5F9',
+  },
+
+  summaryIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: '14px',
+    background: '#EFF6FF',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 24,
+  },
+
+  summaryLabel: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: 700,
+  },
+
+  summaryValue: {
+    fontSize: 28,
+    fontWeight: 800,
+    color: '#0F172A',
+    marginTop: 3,
+  },
+
+  summaryStatus: {
+    fontSize: 18,
+    fontWeight: 800,
+    color: '#16A34A',
+    marginTop: 4,
+  },
+
+  toolbar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 16,
+    flexWrap: 'wrap',
+  },
+
+  searchBox: {
+    flex: '1 1 360px',
+    maxWidth: 560,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    background: '#fff',
+    border: '1px solid #E2E8F0',
+    borderRadius: '12px',
+    padding: '0 14px',
+    boxShadow:
+      '0 4px 14px rgba(15, 23, 42, 0.03)',
+  },
+
+  searchInput: {
+    width: '100%',
+    border: 'none',
+    outline: 'none',
+    padding: '13px 0',
+    fontSize: 14,
+    background: 'transparent',
+  },
+
+  toolbarRight: {
+    display: 'flex',
+    gap: 10,
+    alignItems: 'center',
+  },
+
+  refreshButton: {
+    border: '1px solid #CBD5E1',
+    background: '#fff',
+    color: '#334155',
+    borderRadius: '10px',
+    padding: '10px 14px',
+    cursor: 'pointer',
+    fontWeight: 700,
+  },
+
   panel: {
     background: '#fff',
-    borderRadius: '12px',
-    padding: '18px',
-    boxShadow: '0 8px 24px rgba(15, 23, 42, 0.04)',
+    borderRadius: '16px',
+    padding: '20px',
+    boxShadow:
+      '0 8px 24px rgba(15, 23, 42, 0.04)',
+    border: '1px solid #F1F5F9',
+  },
+
+  panelHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 18,
+  },
+
+  panelSubtitle: {
+    color: '#64748B',
+    fontSize: 13,
+    marginTop: 5,
+  },
+
+  countBadge: {
+    background: '#EFF6FF',
+    color: '#1D4ED8',
+    padding: '6px 10px',
+    borderRadius: '999px',
+    fontSize: 12,
+    fontWeight: 800,
   },
 
   table: {
     width: '100%',
     borderCollapse: 'collapse',
+    minWidth: '850px',
+  },
+
+  th: {
+    textAlign: 'left',
+    padding: '12px',
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: 800,
+    borderBottom: '1px solid #E2E8F0',
+    background: '#F8FAFC',
+  },
+
+  tr: {
+    borderBottom: '1px solid #F1F5F9',
+  },
+
+  td: {
+    padding: '14px 12px',
+    verticalAlign: 'middle',
+    color: '#334155',
+    fontSize: 14,
+  },
+
+  productInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  productAvatar: {
+    width: 42,
+    height: 42,
+    borderRadius: '12px',
+    background: '#EFF6FF',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 20,
+    flexShrink: 0,
+  },
+
+  productName: {
+    fontWeight: 800,
+    color: '#0F172A',
+  },
+
+  productId: {
+    color: '#94A3B8',
+    fontSize: 12,
+    marginTop: 3,
+  },
+
+  codeBadge: {
+    display: 'inline-block',
+    background: '#F1F5F9',
+    color: '#334155',
+    padding: '6px 9px',
+    borderRadius: '7px',
+    fontSize: 12,
+    fontWeight: 700,
+  },
+
+  description: {
+    maxWidth: 300,
+    color: '#64748B',
+    lineHeight: 1.5,
   },
 
   primaryButton: {
     border: 'none',
     background: '#2563EB',
     color: '#fff',
-    borderRadius: '8px',
-    padding: '10px 16px',
+    borderRadius: '10px',
+    padding: '11px 16px',
     cursor: 'pointer',
-    fontWeight: 600,
+    fontWeight: 700,
   },
 
   secondaryButton: {
     border: 'none',
     background: '#E2E8F0',
     color: '#0F172A',
-    borderRadius: '8px',
-    padding: '10px 16px',
+    borderRadius: '10px',
+    padding: '11px 16px',
     cursor: 'pointer',
-    fontWeight: 600,
+    fontWeight: 700,
   },
 
-  actionButton: {
+  editButton: {
     border: 'none',
-    background: '#DBEAFE',
+    background: '#EFF6FF',
     color: '#1D4ED8',
-    borderRadius: '6px',
-    padding: '6px 10px',
-    marginRight: '8px',
+    borderRadius: '8px',
+    padding: '8px 10px',
+    marginRight: 8,
     cursor: 'pointer',
+    fontWeight: 700,
   },
 
   deleteButton: {
-    background: '#FEE2E2',
+    border: 'none',
+    background: '#FEF2F2',
     color: '#B91C1C',
+    borderRadius: '8px',
+    padding: '8px 10px',
+    cursor: 'pointer',
+    fontWeight: 700,
+  },
+
+  fieldRow: {
+    marginBottom: 16,
+  },
+
+  label: {
+    display: 'block',
+    fontWeight: 700,
+    color: '#334155',
+    marginBottom: 7,
   },
 
   input: {
     width: '100%',
     border: '1px solid #CBD5E1',
-    borderRadius: '8px',
-    padding: '10px 12px',
-    marginTop: '6px',
+    borderRadius: '10px',
+    padding: '11px 13px',
     boxSizing: 'border-box',
+    fontSize: 14,
+    outline: 'none',
   },
 
-  fieldRow: {
-    marginBottom: '14px',
+  formActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 20,
+  },
+
+  emptyState: {
+    minHeight: 260,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    color: '#64748B',
+    textAlign: 'center',
+    background: '#F8FAFC',
+    border: '1px dashed #CBD5E1',
+    borderRadius: '12px',
+    padding: 20,
   },
 
   error: {
-    background: '#FEE2E2',
-    color: '#991B1B',
-    padding: '10px 12px',
-    borderRadius: '8px',
-    marginBottom: '16px',
+    background: '#FEF2F2',
+    color: '#B91C1C',
+    border: '1px solid #FECACA',
+    padding: '12px 14px',
+    borderRadius: '10px',
   },
 };

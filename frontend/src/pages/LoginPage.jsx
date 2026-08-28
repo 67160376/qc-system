@@ -45,70 +45,167 @@ export default function LoginPage() {
 
   return (
     <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.logoWrap}>
-          <div style={styles.logo}>QC</div>
-        </div>
+      {/* ฝั่งภาพและข้อมูลระบบ */}
+      <div style={styles.visualSection}>
+        <div style={styles.overlay}>
+          <div style={styles.brand}>
+            <div style={styles.brandLogo}>✓</div>
 
-        <h2 style={{ marginBottom: 8 }}>
-          ระบบควบคุมคุณภาพ
-        </h2>
-
-        <div style={styles.subtitle}>
-          ระบบจัดการควบคุมคุณภาพการผลิต
-        </div>
-
-        <form onSubmit={onSubmit}>
-          <label style={styles.label}>
-            ชื่อผู้ใช้งาน
-          </label>
-
-          <input
-            name="username"
-            value={form.username}
-            onChange={onChange}
-            placeholder="กรอกชื่อผู้ใช้งาน"
-            style={styles.input}
-          />
-
-          <label
-            style={{
-              ...styles.label,
-              marginTop: 16,
-            }}
-          >
-            รหัสผ่าน
-          </label>
-
-          <input
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={onChange}
-            placeholder="กรอกรหัสผ่าน"
-            style={styles.input}
-          />
-
-          {error ? (
-            <div style={styles.error}>
-              {error}
+            <div>
+              <div style={styles.brandName}>QC SYSTEM</div>
+              <div style={styles.brandSubtitle}>
+                ระบบควบคุมคุณภาพการผลิต
+              </div>
             </div>
-          ) : null}
+          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              ...styles.button,
-              ...(loading ? styles.buttonDisabled : {}),
-            }}
-          >
-            {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
-          </button>
-        </form>
+          <div style={styles.heroContent}>
+            <div style={styles.qualityTag}>
+              🏭 ระบบควบคุมคุณภาพ
+            </div>
 
-        <div style={styles.footer}>
-          QC Manufacturing System
+            <h1 style={styles.heroTitle}>
+              ยกระดับมาตรฐาน
+              <br />
+              การควบคุมคุณภาพ
+            </h1>
+
+            <p style={styles.heroText}>
+              ระบบจัดการและติดตามกระบวนการตรวจสอบคุณภาพสินค้า
+              ตั้งแต่วัตถุดิบจนถึงสินค้าสำเร็จรูป
+            </p>
+
+            <div style={styles.featureList}>
+              <div style={styles.feature}>
+                <div style={styles.featureIcon}>✓</div>
+                <span>ตรวจสอบคุณภาพแบบเป็นระบบ</span>
+              </div>
+
+              <div style={styles.feature}>
+                <div style={styles.featureIcon}>📊</div>
+                <span>ติดตามผลการตรวจสอบแบบเรียลไทม์</span>
+              </div>
+
+              <div style={styles.feature}>
+                <div style={styles.featureIcon}>⚠️</div>
+                <span>แจ้งเตือนและติดตามปัญหา NCR</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={styles.visualFooter}>
+            © 2026 QC Manufacturing System
+          </div>
+        </div>
+      </div>
+
+      {/* ฝั่งเข้าสู่ระบบ */}
+      <div style={styles.loginSection}>
+        <div style={styles.loginBox}>
+          <div style={styles.mobileLogo}>
+            <div style={styles.mobileLogoIcon}>✓</div>
+
+            <div>
+              <strong>QC SYSTEM</strong>
+              <div style={styles.mobileSubtitle}>
+                ระบบควบคุมคุณภาพ
+              </div>
+            </div>
+          </div>
+
+          <div style={styles.formHeader}>
+            <div style={styles.welcomeText}>
+              ยินดีต้อนรับกลับมา 👋
+            </div>
+
+            <h2 style={styles.title}>
+              เข้าสู่ระบบ
+            </h2>
+
+            <p style={styles.description}>
+              กรุณากรอกชื่อผู้ใช้งานและรหัสผ่านเพื่อเข้าสู่ระบบ
+            </p>
+          </div>
+
+          <form onSubmit={onSubmit}>
+            <label style={styles.label}>
+              ชื่อผู้ใช้งาน
+            </label>
+
+            <div style={styles.inputWrap}>
+              <span style={styles.inputIcon}>👤</span>
+
+              <input
+                name="username"
+                value={form.username}
+                onChange={onChange}
+                placeholder="กรอกชื่อผู้ใช้งาน"
+                style={styles.input}
+                autoComplete="username"
+              />
+            </div>
+
+            <label
+              style={{
+                ...styles.label,
+                marginTop: 18,
+              }}
+            >
+              รหัสผ่าน
+            </label>
+
+            <div style={styles.inputWrap}>
+              <span style={styles.inputIcon}>🔒</span>
+
+              <input
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={onChange}
+                placeholder="กรอกรหัสผ่าน"
+                style={styles.input}
+                autoComplete="current-password"
+              />
+            </div>
+
+            {error ? (
+              <div style={styles.error}>
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                ...styles.button,
+                ...(loading ? styles.buttonDisabled : {}),
+              }}
+            >
+              {loading ? (
+                <>
+                  <span style={styles.spinner}>◌</span>
+                  กำลังเข้าสู่ระบบ...
+                </>
+              ) : (
+                <>
+                  <span>เข้าสู่ระบบ</span>
+                  <span>→</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          <div style={styles.divider}>
+            <span />
+            <span>ระบบจัดการคุณภาพการผลิต</span>
+            <span />
+          </div>
+
+          <div style={styles.securityNote}>
+            🔐 ข้อมูลของคุณได้รับการป้องกันอย่างปลอดภัย
+          </div>
         </div>
       </div>
     </div>
@@ -118,93 +215,285 @@ export default function LoginPage() {
 const styles = {
   page: {
     minHeight: '100vh',
+    display: 'grid',
+    gridTemplateColumns: '1.1fr 0.9fr',
+    background: '#FFFFFF',
+  },
+
+  visualSection: {
+    position: 'relative',
+    minHeight: '100vh',
+    backgroundImage:
+      'url("https://images.unsplash.com/photo-1565610222536-ef125c59da2e?auto=format&fit=crop&w=1600&q=85")',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    color: '#FFFFFF',
+  },
+
+  overlay: {
+    position: 'absolute',
+    inset: 0,
+    padding: '36px 52px',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'column',
     background:
-      'linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #2563EB 100%)',
+      'linear-gradient(135deg, rgba(15,23,42,0.96) 0%, rgba(30,64,175,0.82) 55%, rgba(37,99,235,0.7) 100%)',
   },
 
-  card: {
-    width: '100%',
-    maxWidth: 400,
-    background: '#fff',
-    borderRadius: '18px',
-    padding: '32px 26px',
-    boxShadow: '0 15px 30px rgba(15, 23, 42, 0.25)',
-  },
-
-  logoWrap: {
+  brand: {
     display: 'flex',
-    justifyContent: 'center',
-    marginBottom: 12,
+    alignItems: 'center',
+    gap: 14,
   },
 
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: '16px',
-    background: '#2563EB',
-    color: '#fff',
+  brandLogo: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    background:
+      'linear-gradient(135deg, #3B82F6, #6366F1)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 28,
+    fontSize: 24,
+    fontWeight: 800,
+    boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+  },
+
+  brandName: {
+    fontSize: 18,
+    fontWeight: 800,
+    letterSpacing: '0.12em',
+  },
+
+  brandSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#CBD5E1',
+  },
+
+  heroContent: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    maxWidth: 650,
+    paddingBottom: 40,
+  },
+
+  qualityTag: {
+    width: 'fit-content',
+    padding: '8px 14px',
+    borderRadius: 999,
+    background: 'rgba(255,255,255,0.12)',
+    border: '1px solid rgba(255,255,255,0.18)',
+    backdropFilter: 'blur(8px)',
+    fontSize: 13,
+    fontWeight: 700,
+    marginBottom: 24,
+  },
+
+  heroTitle: {
+    margin: 0,
+    fontSize: 48,
+    lineHeight: 1.15,
+    letterSpacing: '-0.04em',
     fontWeight: 800,
   },
 
-  subtitle: {
+  heroText: {
+    marginTop: 22,
+    maxWidth: 560,
+    color: '#DBEAFE',
+    fontSize: 16,
+    lineHeight: 1.8,
+  },
+
+  featureList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 14,
+    marginTop: 30,
+  },
+
+  feature: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#E0F2FE',
+  },
+
+  featureIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'rgba(255,255,255,0.13)',
+    border: '1px solid rgba(255,255,255,0.12)',
+  },
+
+  visualFooter: {
+    color: '#94A3B8',
+    fontSize: 12,
+  },
+
+  loginSection: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px',
+    background:
+      'radial-gradient(circle at top right, #EFF6FF 0%, transparent 35%), #FFFFFF',
+  },
+
+  loginBox: {
+    width: '100%',
+    maxWidth: 440,
+  },
+
+  mobileLogo: {
+    display: 'none',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 36,
+  },
+
+  mobileLogoIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    background: '#2563EB',
+    color: '#FFFFFF',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 800,
+  },
+
+  mobileSubtitle: {
+    marginTop: 2,
     color: '#64748B',
-    marginBottom: 24,
+    fontSize: 11,
+  },
+
+  formHeader: {
+    marginBottom: 34,
+  },
+
+  welcomeText: {
+    color: '#2563EB',
+    fontSize: 14,
+    fontWeight: 700,
+    marginBottom: 8,
+  },
+
+  title: {
+    margin: 0,
+    color: '#0F172A',
+    fontSize: 36,
+    fontWeight: 800,
+    letterSpacing: '-0.04em',
+  },
+
+  description: {
+    marginTop: 12,
+    color: '#64748B',
+    lineHeight: 1.6,
+    fontSize: 14,
   },
 
   label: {
     display: 'block',
-    fontWeight: 600,
-    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: 700,
     color: '#334155',
+    marginBottom: 8,
+  },
+
+  inputWrap: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+  },
+
+  inputIcon: {
+    position: 'absolute',
+    left: 15,
+    fontSize: 16,
+    pointerEvents: 'none',
+    zIndex: 1,
   },
 
   input: {
     width: '100%',
-    padding: '12px 14px',
-    borderRadius: '10px',
-    border: '1px solid #CBD5E1',
-    fontSize: 15,
-    marginBottom: 8,
     boxSizing: 'border-box',
+    padding: '14px 16px 14px 46px',
+    borderRadius: 12,
+    border: '1px solid #CBD5E1',
+    background: '#FFFFFF',
+    fontSize: 15,
+    color: '#0F172A',
+    outline: 'none',
+  },
+
+  error: {
+    marginTop: 16,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    background: '#FEF2F2',
+    color: '#B91C1C',
+    border: '1px solid #FECACA',
+    borderRadius: 10,
+    padding: '11px 13px',
+    fontSize: 13,
   },
 
   button: {
     width: '100%',
-    marginTop: 18,
+    marginTop: 24,
     border: 'none',
-    borderRadius: '10px',
-    background: '#2563EB',
-    color: '#fff',
-    padding: '14px',
+    borderRadius: 12,
+    padding: '15px 18px',
+    background:
+      'linear-gradient(135deg, #2563EB, #4F46E5)',
+    color: '#FFFFFF',
+    fontSize: 15,
     fontWeight: 700,
     cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    boxShadow: '0 10px 24px rgba(37,99,235,0.25)',
   },
 
   buttonDisabled: {
-    opacity: 0.7,
+    opacity: 0.65,
     cursor: 'not-allowed',
   },
 
-  error: {
-    marginTop: 12,
-    background: '#FEE2E2',
-    color: '#991B1B',
-    padding: '10px 12px',
-    borderRadius: '8px',
-    border: '1px solid #FCA5A5',
+  spinner: {
+    fontSize: 18,
   },
 
-  footer: {
-    marginTop: 20,
-    textAlign: 'center',
-    fontSize: 12,
+  divider: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    margin: '30px 0 18px',
     color: '#94A3B8',
+    fontSize: 11,
+  },
+
+  securityNote: {
+    textAlign: 'center',
+    color: '#64748B',
+    fontSize: 12,
   },
 };
